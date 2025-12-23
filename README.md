@@ -1,12 +1,12 @@
 # DragonRuby Mode for Emacs
 
-This project follows a strict [Project Contract](docs/CONTRACT.md).
+This project follows a strict [Contract](docs/CONTRACT.md).
 
 ## Philosophy
 "The goal is not speed of typing, but clarity of thought."
 
 ## Installation
-See [docs/INSTALL_INSTRUCTIONS.md](docs/INSTALL_INSTRUCTIONS.md) for setup details.
+See [instructions](docs/INSTALL_INSTRUCTIONS.md) for setup details.
 
 ## Usage
 The mode activates **automatically** when you open a Ruby file containing `def tick`. You will see `DR` in the modeline.
