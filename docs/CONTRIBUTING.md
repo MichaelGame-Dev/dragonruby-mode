@@ -26,6 +26,21 @@ When adding a new feature, follow this decision tree to know where code belongs:
 2.  Require it in `src/dragonruby.el`.
 3.  Add tests in `tests/`.
 
+### How to Define a Rich Concept
+
+When creating a concept, **fill ALL fields** to make it a true cognitive tool:
+
+- **`definition`**: One-line essential truth (must be understandable without context)
+- **`intention`**: Why this exists—what problem it solves
+- **`mental-model`**: Analogy or metaphor (the MOST important field for understanding)
+- **`problems`**: What confusion this prevents
+- **`limits`**: What this does NOT do (prevents misconceptions)
+- **`relations`**: Connections to other concepts (creates knowledge graph)
+- **`presentation`**: How to show this (eldoc/tooltip/inspector)
+- **`evolution`**: How this may change over time
+
+**See [`docs/CONCEPT_GUIDE.md`](CONCEPT_GUIDE.md) for detailed guidance and examples.**
+
 ## Philosophy
 
 Remember: **"The goal is not speed of typing, but clarity of thought."**

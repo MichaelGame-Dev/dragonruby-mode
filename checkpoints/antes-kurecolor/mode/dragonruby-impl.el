@@ -13,7 +13,6 @@
   :group 'dragonruby
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-c C-d") 'dragonruby-inspect-concept-at-point)
-            (define-key map (kbd "C-c C-k") 'dragonruby-adjust-color-at-point)
             map)
   (if dragonruby-mode
       (progn
