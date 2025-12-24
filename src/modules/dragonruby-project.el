@@ -1,0 +1,39 @@
+;;; dragonruby-project.el --- Project detection and file utilities -*- lexical-binding: t; -*-
+
+(defconst dragonruby-asset-dirs
+  '((sprite . "sprites")
+    (background . "sprites")
+    (audio . "audio")
+    (code . "app")))
+
+(defconst dragonruby-image-exts '("png" "bmp" "jpg" "jpeg"))
+(defconst dragonruby-audio-exts '("wav" "ogg" "mp3"))
+(defconst dragonruby-code-exts  '("rb"))
+
+(defun dragonruby--project-root ()
+  "Detect the root of the DragonRuby project (looks for 'app' folder)."
+  (locate-dominating-file default-directory "app"))
+
+(defun dragonruby--files-in (dir extensions)
+  "List files recursively in DIR matching EXTENSIONS."
+  (when (and dir (file-directory-p dir))
+    (directory-files-recursively
+     dir
+     (concat "\\." (regexp-opt extensions) "$"))))
+
+(defun dragonruby--resolve-require (path)
+  "Convert 'require \"foo\"' into a real path inside app/."
+  (let ((root (dragonruby--project-root)))
+    (when root
+      (expand-file-name (concat "app/" path ".rb") root))))
+
+(defun dragonruby--resolve-asset (path)
+  "Check if an asset exists relative to project root."
+  (let ((root (dragonruby--project-root)))
+    (when root
+      (let ((full-path (expand-file-name path root)))
+        (if (file-exists-p full-path)
+            full-path
+          nil)))))
+
+(provide 'dragonruby-project)

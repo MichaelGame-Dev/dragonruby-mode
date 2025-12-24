@@ -13,7 +13,7 @@
 
 ;;; Code:
 
-;; Add subdirectories to load-path
+;; 1. Setup Load Path
 (eval-and-compile
   (let ((current-dir (file-name-directory (or load-file-name buffer-file-name))))
     (add-to-list 'load-path (expand-file-name "core" current-dir))
@@ -22,18 +22,23 @@
     (add-to-list 'load-path (expand-file-name "mode" current-dir))
     (add-to-list 'load-path (expand-file-name "concepts" current-dir))))
 
+;; 2. Infrastructure (Core & Modules)
 (require 'dragonruby-core-concepts)
 (require 'dragonruby-registry)
-(require 'dragonruby-eldoc)
-(require 'dragonruby-inspector)
-(require 'dragonruby-concept-hints)
-(require 'dragonruby-color-preview)
-(require 'dragonruby-sprite-preview)
-(require 'dragonruby-tick)
+(require 'dragonruby-project)
+
+;; 3. Knowledge Base (Concepts)
 (require 'dragonruby-args)
 (require 'dragonruby-args-sub)
-(require 'dragonruby-outputs-sub)
-(require 'dragonruby-inputs-sub)
+(require 'dragonruby-colors)
+
+;; 4. User Interface (Visuals)
+(require 'dragonruby-eldoc)
+(require 'dragonruby-colors-ui)
+(require 'dragonruby-sprites-ui)
+(require 'dragonruby-navigation-ui)
+
+;; 5. Orchestration (The Mode)
 (require 'dragonruby-impl)
 
 (provide 'dragonruby)

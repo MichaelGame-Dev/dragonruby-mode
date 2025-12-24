@@ -6,22 +6,50 @@
 (require 'dragonruby-color-preview)
 (require 'dragonruby-sprite-preview)
 
+;; Import UI Logic
+(require 'dragonruby-colors-ui)
+(require 'dragonruby-sprites-ui)
+(require 'dragonruby-navigation-ui)
+
+(defun dragonruby--after-change (start end _len)
+  "Hook to run all scanners on text change."
+  (when dragonruby-mode
+    ;; 1. Clean old overlays
+    (dragonruby--clear-color-overlays start end)
+    (dragonruby--clear-sprite-overlays start end)
+    (dragonruby--clear-require-overlays start end)
+    
+    ;; 2. Scan window (context)
+    (let ((s (max (point-min) (- start 120)))
+          (e (min (point-max) (+ end 120))))
+      (dragonruby--scan-colors-region s e)
+      (dragonruby--scan-sprites-region s e)
+      (dragonruby--scan-requires-region s e))))
+
+(defun dragonruby--scan-all ()
+  "Run full buffer scan."
+  (dragonruby--scan-colors-entire-buffer)
+  (dragonruby--scan-sprites-region (point-min) (point-max))
+  (dragonruby--scan-requires-region (point-min) (point-max)))
+
 ;;;###autoload
 (define-minor-mode dragonruby-mode
   "Minor mode for assisting DragonRuby development."
   :lighter " DR"
   :group 'dragonruby
-  :keymap (let ((map (make-sparse-keymap)))
-            (define-key map (kbd "C-c C-d") 'dragonruby-inspect-concept-at-point)
-            (define-key map (kbd "C-c C-k") 'dragonruby-adjust-color-at-point)
-            map)
   (if dragonruby-mode
       (progn
         (dragonruby-enable-eldoc)
-        (dragonruby-enable-concept-hints)
-        (dragonruby-enable-color-preview)
-        (dragonruby-enable-sprite-preview))
-    (kill-local-variable 'eldoc-documentation-function)))
+        (dragonruby--scan-all)
+        (add-hook 'after-change-functions #'dragonruby--after-change nil t)
+        (add-hook 'completion-at-point-functions #'dragonruby--completion-at-point nil t))
+    ;; Disable
+    (kill-local-variable 'eldoc-documentation-function)
+    (remove-hook 'after-change-functions #'dragonruby--after-change t)
+    (remove-hook 'completion-at-point-functions #'dragonruby--completion-at-point t)
+    (remove-overlays (point-min) (point-max) 'dragonruby-color-overlay t)
+    (remove-overlays (point-min) (point-max) 'dragonruby-sprite-overlay t)
+    (remove-overlays (point-min) (point-max) 'dragonruby-require-overlay t)))
 
 ;; ---------------------------------------------------------------------------
 ;; Ruby integration
