@@ -28,12 +28,15 @@
       (expand-file-name (concat "app/" path ".rb") root))))
 
 (defun dragonruby--resolve-asset (path)
-  "Check if an asset exists relative to project root."
-  (let ((root (dragonruby--project-root)))
+  "Check if an asset exists relative to project root (or current dir)."
+  (let ((root (or (dragonruby--project-root) default-directory))) ;; Fallback to current dir
     (when root
       (let ((full-path (expand-file-name path root)))
         (if (file-exists-p full-path)
             full-path
-          nil)))))
+          ;; Try direct relative check as last resort
+          (if (file-exists-p path)
+              (expand-file-name path)
+            nil))))))
 
 (provide 'dragonruby-project)

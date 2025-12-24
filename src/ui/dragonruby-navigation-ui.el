@@ -1,6 +1,7 @@
 ;;; dragonruby-navigation-ui.el --- Clickable requires and completion -*- lexical-binding: t; -*-
 
 (require 'dragonruby-project)
+(require 'dragonruby-config)
 
 ;; --- REQUIRE LINKS ---
 
@@ -23,13 +24,14 @@
     ov))
 
 (defun dragonruby--scan-requires-region (start end)
-  (save-excursion
-    (goto-char start)
-    (while (re-search-forward dragonruby--require-regex end t)
-      (let ((s (match-beginning 1))
-            (e (match-end 1))
-            (path (match-string 1)))
-        (dragonruby--make-require-overlay s e path)))))
+  (when dragonruby-enable-require-linking
+    (save-excursion
+      (goto-char start)
+      (while (re-search-forward dragonruby--require-regex end t)
+        (let ((s (match-beginning 1))
+              (e (match-end 1))
+              (path (match-string 1)))
+          (dragonruby--make-require-overlay s e path))))))
 
 (defun dragonruby--clear-require-overlays (start end)
   (remove-overlays start end 'dragonruby-require-overlay t))
@@ -51,5 +53,25 @@
         (list start end
               (mapcar (lambda (f) (file-relative-name f root)) candidates)
               :exclusive 'no)))))
+
+;; --- AUTO-TRIGGER ---
+
+(defun dragonruby--post-self-insert ()
+  "Auto-trigger completion when typing specific characters."
+  (when (and dragonruby-mode
+             dragonruby-enable-auto-completion
+             (eq last-command-event ?/))
+    ;; Check if we are inside a string
+    (let ((face (get-text-property (point) 'face)))
+      (when (or (eq face 'font-lock-string-face)
+                (and (listp face) (memq 'font-lock-string-face face)))
+        ;; Trigger completion explicitly
+        (completion-at-point)))))
+
+(defun dragonruby-navigation-enable ()
+  (add-hook 'post-self-insert-hook #'dragonruby--post-self-insert nil t))
+
+(defun dragonruby-navigation-disable ()
+  (remove-hook 'post-self-insert-hook #'dragonruby--post-self-insert t))
 
 (provide 'dragonruby-navigation-ui)
