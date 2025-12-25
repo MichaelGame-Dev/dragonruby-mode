@@ -55,3 +55,13 @@ Customize via `M-x customize-group RET dragonruby RET`.
 ## Architecture
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for technical details on how the semantic engine works.
+
+## Development
+
+To verify that your changes compile correctly, you can use the included `Makefile`:
+
+```bash
+make compile
+```
+
+This will byte-compile all source files, identifying syntax errors or missing requirements immediately.
