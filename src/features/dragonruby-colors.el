@@ -79,8 +79,9 @@
   (let* ((start (overlay-start overlay))
          (end   (overlay-end overlay))
          (text  (buffer-substring-no-properties start end)))
-    ;; Flexible Regex for 3, 4, or 5 values with Hex support
-    (when (string-match "\\[\\s-*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\(?:[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\)?\\(?:[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\)?\\s-*\\]" text)
+    ;; Flexible Regex for Array: [r, g, b]
+    (cond
+     ((string-match "\\[\\s-*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\(?:[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\)?\\(?:[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\)?\\s-*\\]" text)
       (let* ((v1 (string-to-number (match-string 1 text)))
              (v2 (string-to-number (match-string 2 text)))
              (v3 (string-to-number (match-string 3 text)))
@@ -90,17 +91,50 @@
                                      (when v4 (string-to-number v4))
                                      (when v5 (string-to-number v5)))))
              (new (dragonruby--read-rgba current)))
-        (dragonruby--replace-color-block start end new)
+        (dragonruby--replace-color-block start end new)))
+     
+     ;; Flexible Regex for Hash: r: v, g: v, b: v (Simple order for now)
+     ((string-match "\\br:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+g:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+b:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\(?:[, ]+a:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\)?" text)
+      (let* ((r (string-to-number (match-string 1 text)))
+             (g (string-to-number (match-string 2 text)))
+             (b (string-to-number (match-string 3 text)))
+             (a (match-string 4 text))
+             ;; We reuse the reader but need to reconstruct the hash string manually
+             (new-values (dragonruby--read-rgba (delq nil (list r g b (when a (string-to-number a))))))
+             (nr (nth 0 new-values))
+             (ng (nth 1 new-values))
+             (nb (nth 2 new-values))
+             (na (nth 3 new-values)))
+        
+        ;; Construct new hash string r: X, g: Y, b: Z
+        (let ((new-text (format "r: %d, g: %d, b: %d" nr ng nb)))
+          (when na (setq new-text (concat new-text (format ", a: %d" na))))
+          (save-excursion
+            (goto-char start)
+            (delete-region start end)
+            (insert new-text)))
         (dragonruby--scan-colors-region (max (point-min) (- start 10))
-                                        (min (point-max) (+ start 40)))))))
+                                        (min (point-max) (+ start 40))))))))
 
 ;; 4. Scanning Logic
 (defun dragonruby--scan-colors-region (start end)
-  "Scan and overlay colors in region."
+  "Scan and overlay colors in region. Supports Arrays [...] and Hashes r:..,g:.."
   (when dragonruby-enable-color-preview
     (save-excursion
       (goto-char start)
+      ;; 1. Scan Arrays
       (while (and (re-search-forward "\\[\\s-*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\(?:[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\)?\\(?:[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\)?\\s-*\\]" end t)
+                  (< (dragonruby--count-color-overlays) dragonruby-max-overlays-per-type))
+        (let ((s (match-beginning 0))
+              (e (match-end 0))
+              (r (string-to-number (match-string 1)))
+              (g (string-to-number (match-string 2)))
+              (b (string-to-number (match-string 3))))
+          (dragonruby--make-color-overlay s e r g b)))
+      
+      ;; 2. Scan Hashes (r: G, g: Y, b: Z)
+      (goto-char start)
+      (while (and (re-search-forward "\\br:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+g:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+b:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\(?:[, ]+a:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\)?" end t)
                   (< (dragonruby--count-color-overlays) dragonruby-max-overlays-per-type))
         (let ((s (match-beginning 0))
               (e (match-end 0))
