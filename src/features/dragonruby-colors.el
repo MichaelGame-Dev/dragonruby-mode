@@ -93,28 +93,36 @@
              (new (dragonruby--read-rgba current)))
         (dragonruby--replace-color-block start end new)))
      
-     ;; Flexible Regex for Hash: r: v, g: v, b: v (Simple order for now)
-     ((string-match "\\br:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+g:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+b:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\(?:[, ]+a:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\)?" text)
-      (let* ((r (string-to-number (match-string 1 text)))
-             (g (string-to-number (match-string 2 text)))
-             (b (string-to-number (match-string 3 text)))
-             (a (match-string 4 text))
-             ;; We reuse the reader but need to reconstruct the hash string manually
-             (new-values (dragonruby--read-rgba (delq nil (list r g b (when a (string-to-number a))))))
-             (nr (nth 0 new-values))
-             (ng (nth 1 new-values))
-             (nb (nth 2 new-values))
-             (na (nth 3 new-values)))
+     ;; Flexible Regex for Hash with arbitrary order:
+     ;; Matches keys r:, g:, b:, a: (and hex/dec values) separated by commas/spaces.
+     ;; We capture a block that looks like "r: 10, g: 20, b: 30"
+     ((string-match "\\(\\(?:[rgba]:\\s*\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\s*[, ]*\\)\\{3,4\\}\\)" text)
+      (let* ((match-text (match-string 1 text))
+             (r (when (string-match "r:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)" match-text)
+                  (string-to-number (match-string 1 match-text))))
+             (g (when (string-match "g:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)" match-text)
+                  (string-to-number (match-string 1 match-text))))
+             (b (when (string-match "b:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)" match-text)
+                  (string-to-number (match-string 1 match-text))))
+             (a (when (string-match "a:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)" match-text)
+                  (match-string 1 match-text))))
         
-        ;; Construct new hash string r: X, g: Y, b: Z
-        (let ((new-text (format "r: %d, g: %d, b: %d" nr ng nb)))
-          (when na (setq new-text (concat new-text (format ", a: %d" na))))
-          (save-excursion
-            (goto-char start)
-            (delete-region start end)
-            (insert new-text)))
-        (dragonruby--scan-colors-region (max (point-min) (- start 10))
-                                        (min (point-max) (+ start 40))))))))
+        (when (and r g b) ;; Only proceed if we found at least r, g, b
+          (let* ((new-values (dragonruby--read-rgba (delq nil (list r g b (when a (string-to-number a))))))
+                 (nr (nth 0 new-values))
+                 (ng (nth 1 new-values))
+                 (nb (nth 2 new-values))
+                 (na (nth 3 new-values))
+                 ;; Reconstruct while preserving existing style/order is hard, 
+                 ;; so we enforce a standard clean "r: V, g: V, b: V" format for simplicity.
+                 (new-text (format "r: %d, g: %d, b: %d" nr ng nb)))
+            (when na (setq new-text (concat new-text (format ", a: %d" na))))
+            (save-excursion
+              (goto-char start)
+              (delete-region start end)
+              (insert new-text)))
+          (dragonruby--scan-colors-region (max (point-min) (- start 10))
+                                          (min (point-max) (+ start 40)))))))))
 
 ;; 4. Scanning Logic
 (defun dragonruby--scan-colors-region (start end)
@@ -132,16 +140,23 @@
               (b (string-to-number (match-string 3))))
           (dragonruby--make-color-overlay s e r g b)))
       
-      ;; 2. Scan Hashes (r: G, g: Y, b: Z)
+      ;; 2. Scan Hashes (Flexible Order)
+      ;; Pattern: Look for 3 occurrences of [rgb]: followed by number
       (goto-char start)
-      (while (and (re-search-forward "\\br:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+g:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+b:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\(?:[, ]+a:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\)?" end t)
+            (while (and (re-search-forward "\\(?:\\b[rgba]:\\s*\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\s*[, ]*\\)\\{3,4\\}" end t)
                   (< (dragonruby--count-color-overlays) dragonruby-max-overlays-per-type))
-        (let ((s (match-beginning 0))
-              (e (match-end 0))
-              (r (string-to-number (match-string 1)))
-              (g (string-to-number (match-string 2)))
-              (b (string-to-number (match-string 3))))
-          (dragonruby--make-color-overlay s e r g b))))))
+        (let* ((s (match-beginning 0))
+               (e (match-end 0))
+               (match-text (buffer-substring-no-properties s e))
+               (r (when (string-match "r:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)" match-text)
+                    (string-to-number (match-string 1 match-text))))
+               (g (when (string-match "g:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)" match-text)
+                    (string-to-number (match-string 1 match-text))))
+               (b (when (string-match "b:\\s*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)" match-text)
+                    (string-to-number (match-string 1 match-text)))))
+          
+          (when (and r g b)
+            (dragonruby--make-color-overlay s e r g b)))))))
 
 (defun dragonruby--scan-colors-entire-buffer ()
   "Scan the whole buffer."

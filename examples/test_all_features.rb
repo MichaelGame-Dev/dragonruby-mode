@@ -10,7 +10,8 @@ def tick args
     r: 255, g: 0, b: 0,            # [255, 0, 0]   <- RED (Decimal)
     color: [0, 128, 0],            # [0, 128, 0]   <- GREEN (Decimal)
     hex: [0xFF, 0x00, 0xFF],       # [0xFF, 0, 255] <- PURPLE (Hex)
-    alpha: [0, 0, 255, 128]        # [0, 0, 255, 128] <- BLUE (Semi-transparent)
+    alpha: [0, 0, 255, 128],       # [0, 0, 255, 128] <- BLUE (Semi-transparent)
+    chaos: { g: 255, b: 0, r: 0 }  # r: 0, g: 255, b: 0 <- GREEN (Chaotic Hash)
   }
 
   # ------------------------------------------------------------------
