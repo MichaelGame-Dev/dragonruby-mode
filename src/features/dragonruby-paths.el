@@ -1,4 +1,4 @@
-;;; dragonruby-navigation-ui.el --- Clickable requires and completion -*- lexical-binding: t; -*-
+;;; dragonruby-paths.el --- Clickable requires and completion -*- lexical-binding: t; -*-
 
 (require 'dragonruby-project)
 (require 'dragonruby-config)
@@ -74,4 +74,4 @@
 (defun dragonruby-navigation-disable ()
   (remove-hook 'post-self-insert-hook #'dragonruby--post-self-insert t))
 
-(provide 'dragonruby-navigation-ui)
+(provide 'dragonruby-paths)

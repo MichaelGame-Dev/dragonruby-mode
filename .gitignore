@@ -1,0 +1,37 @@
+# Emacs compilation artifacts
+*.elc
+*~
+\#*\#
+auto-save-list/
+custom.el
+
+# Local Configuration & Loaders
+.emacs-init.el
+init.el
+load-plugin.el
+.dir-locals.el
+
+# OS specific
+.DS_Store
+.subversion
+Thumbs.db
+
+# Quick/Dirty Dev Scripts (Noise)
+test-*.el
+simple-test.el
+quick-color-test.el
+run-tests.el
+*.bat
+test.sh
+
+# Temporary Debug Documentation
+DEBUG_COLORS.md
+QUICKSTART_DEBUG.md
+
+# Project Genesis (Meta-Project / Personal Philosophy)
+# Excluded to keep the repo focused on the tool itself
+PROYECTO_GENESIS/
+
+# Archives
+*.zip
+*.tar.gz

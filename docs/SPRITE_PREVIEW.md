@@ -1,226 +1,140 @@
-# Sprite Preview en DragonRuby Mode
+# 🎨 Sistema de Preview de Sprites - Mejorado
 
-## ¿Qué es?
+## ✨ Nuevas Características
 
-Una característica que muestra **thumbnails de sprites inline** con información de dimensiones cuando escribes rutas de imágenes en tu código DragonRuby.
+### 1. **Tooltip Rico con Metadata Completa**
+
+Cuando haces hover sobre un path de sprite, ahora muestra:
+
+```
+[IMAGEN 128x128]
+
+📊 Sprite Info:
+  Size: 64x64 px
+  Format: PNG
+  File Size: 12 KB
+  Path: /full/path/to/sprites/player.png
+
+💡 Click to open file
+```
+
+### 2. **Detección Automática de Dimensiones**
+
+El sistema ahora intenta obtener las dimensiones reales de la imagen usando:
+- **ImageMagick** (`identify`) - primera opción
+- **sips** (macOS nativo) - fallback automático
+
+### 3. **Feedback Visual Mejorado**
+
+| Tipo | Apariencia |
+|------|------------|
+| **Path válido** | Subrayado **cyan**, hover **dark cyan** |
+| **Path no encontrado** | Subrayado ondulado **rojo** |
+| **Formato no soportado** | Subrayado ondulado **naranja** |
+
+### 4. **Clickeable**
+
+- Click sobre **cualquier path de sprite** abre el archivo en Emacs
+- Pasa el mouse para ver el highlight **dark cyan**
 
 ---
 
-## Cómo Funciona
+## 🎯 Formatos Soportados
 
-Cuando escribes una ruta de sprite:
+### ✅ Soportados (con preview)
+- PNG
+- JPG / JPEG
+- BMP
+
+### ⚠️ No Soportados (warning naranja)
+- GIF
+- WEBP
+- SVG
+- PSD
+- TIFF
+
+---
+
+## 📝 Ejemplos de Uso
+
+### En Código Ruby:
 
 ```ruby
-sprite = {
-  x: 100,
-  y: 100,
-  w: 64,
-  h: 64,
-  path: 'sprites/player.png'  # 🖼️ [64x64]
-}
-```
+# Comillas dobles
+args.outputs.sprites << { path: "sprites/player.png" }
 
-Verás:
-- **Thumbnail** de la imagen al lado del path
-- **Dimensiones** `[64x64]` después del path
-- **⚠️ Advertencias** si hay problemas potenciales
+# Comillas simples (también funciona)
+sprite_path = 'sprites/enemy.png'
 
----
+# En arrays
+args.outputs.sprites << [100, 100, 64, 64, "sprites/hero.png"]
 
-## Advertencias Automáticas
-
-### ⚠️ Imagen Muy Pequeña
-```ruby
-path: 'sprites/tiny.png'  # [8x8] ⚠ Very small - will be upscaled
-```
-**Problema**: Imágenes menores a 16x16 se verán pixeladas al escalar.
-
-### ⚠️ Tamaño Impar
-```ruby
-path: 'sprites/odd.png'  # [23x47] ⚠ Odd size - may appear blurry
-```
-**Problema**: Tamaños que no son múltiplos de 8 pueden verse borrosos.
-
-**Tamaños recomendados**: 16, 24, 32, 48, 64, 128, 256
-
----
-
-## Ejemplos
-
-### Ejemplo 1: Sprite Básico
-
-```ruby
-def tick args
-  player = {
-    x: 640,
-    y: 360,
-    w: 64,
-    h: 64,
-    path: 'sprites/square/blue.png'  # 🖼️ [64x64]
-  }
-  
-  args.outputs.sprites << player
-end
-```
-
-### Ejemplo 2: Sprite con Color Tint
-
-```ruby
-def tick args
-  enemy = {
-    x: 800,
-    y: 360,
-    w: 64,
-    h: 64,
-    path: 'sprites/square/red.png',  # 🖼️ [64x64]
-    r: 255,  # ███ (color preview también visible)
-    g: 0,
-    b: 0
-  }
-  
-  args.outputs.sprites << enemy
-end
-```
-
-### Ejemplo 3: Múltiples Sprites
-
-```ruby
-def tick args
-  sprites = [
-    { x: 100, y: 100, w: 32, h: 32, path: 'sprites/coin.png' },     # 🖼️ [32x32]
-    { x: 200, y: 100, w: 48, h: 48, path: 'sprites/gem.png' },      # 🖼️ [48x48]
-    { x: 300, y: 100, w: 64, h: 64, path: 'sprites/chest.png' }     # 🖼️ [64x64]
-  ]
-  
-  args.outputs.sprites << sprites
-end
+# ✅ Todos estos mostrarán el tooltip rico al hacer hover
 ```
 
 ---
 
-## Casos de Uso
+## 🔧 Configuración
 
-### 1. **Verificar Imagen Correcta**
-Asegúrate de que estás usando la imagen que quieres sin ejecutar el juego.
+Puedes deshabilitar el sistema si es necesario:
 
-### 2. **Detectar Problemas de Escala**
-Las advertencias te ayudan a identificar por qué una imagen se ve borrosa.
-
-### 3. **Optimizar Assets**
-Identifica imágenes con transparencia no usada o tamaños no óptimos.
-
-### 4. **Desarrollo Rápido**
-Ve tus sprites mientras programas, sin cambiar de ventana.
-
----
-
-## Formatos Soportados
-
-- ✅ `.png` (recomendado)
-- ✅ `.jpg` / `.jpeg`
-
----
-
-## Estructura de Proyecto
-
-El sprite preview busca imágenes relativas a:
-1. Directorio del archivo actual
-2. Directorio padre (común en estructura `mygame/app/`)
-3. Raíz del proyecto
-
-**Estructura típica**:
-```
-mygame/
-├── app/
-│   └── main.rb          ← Tu código
-└── sprites/
-    ├── player.png
-    └── square/
-        └── blue.png
-```
-
-**En main.rb**:
-```ruby
-path: 'sprites/player.png'        # ✅ Encontrado
-path: 'sprites/square/blue.png'   # ✅ Encontrado
-```
-
----
-
-## Ventajas
-
-✅ **Visual** - Ve exactamente qué imagen estás usando  
-✅ **Dimensiones** - Sabe el tamaño sin abrir el archivo  
-✅ **Advertencias** - Detecta problemas antes de ejecutar  
-✅ **Rápido** - No necesitas cambiar de ventana  
-✅ **Automático** - Funciona mientras escribes  
-
----
-
-## Actualizar Previsualizaciones
-
-Las previsualizaciones se actualizan automáticamente cuando:
-- Escribes nuevas rutas
-- Modificas rutas existentes
-- Guardas el archivo
-
-Si necesitas forzar una actualización:
-```
-M-x dragonruby-update-sprite-previews
-```
-
----
-
-## Ejemplo Completo: UI de Juego
-
-```ruby
-def tick args
-  # Barra de salud con sprite de corazón
-  health_icon = {
-    x: 50,
-    y: 650,
-    w: 32,
-    h: 32,
-    path: 'sprites/heart.png'  # 🖼️ [32x32]
-  }
-  args.outputs.sprites << health_icon
-  
-  # Barra de salud con color
-  health_bar = [90, 650, 150, 30, 255, 50, 50]  # ███ Rojo
-  args.outputs.solids << health_bar
-  
-  # Icono de mana
-  mana_icon = {
-    x: 50,
-    y: 600,
-    w: 32,
-    h: 32,
-    path: 'sprites/mana.png'  # 🖼️ [32x32]
-  }
-  args.outputs.sprites << mana_icon
-  
-  # Barra de mana con color
-  mana_bar = [90, 600, 120, 30, 50, 100, 255]  # ███ Azul
-  args.outputs.solids << mana_bar
-end
-```
-
----
-
-## Troubleshooting
-
-### Problema: No veo el thumbnail
-**Solución**: Verifica que la ruta sea correcta y el archivo exista.
-
-### Problema: Thumbnail muy grande
-**Solución**: El tamaño máximo es 32px. Ajusta con:
 ```elisp
-(setq dragonruby-sprite-preview-size 48)  ; Más grande
+(setq dragonruby-enable-sprite-preview nil)
 ```
-
-### Problema: Advertencia de tamaño impar
-**Solución**: Redimensiona tu sprite a múltiplo de 8 (16, 24, 32, 48, 64, etc.)
 
 ---
 
-¡Ahora puedes ver tus sprites mientras programas! 🖼️✨
+## 🧪 Archivo de Prueba
+
+Archivo creado: `test-sprites.rb`
+
+Abre este archivo con `dragonruby-mode` activo y prueba:
+1. Hover sobre cualquier path de sprite
+2. Verifica que aparece la miniatura
+3. Verifica que muestra dimensiones, formato, tamaño
+4. Click sobre el path para abrirlo
+
+---
+
+## 📊 Información Técnica
+
+### Función de Dimensiones
+```elisp
+(dragonruby--get-image-dimensions path)
+```
+Retorna: `(cons width height)` o `nil`
+
+### Función de Tooltip
+```elisp
+(dragonruby--sprite-hover-info path full-path)
+```
+Retorna: String propertizado con imagen + metadata
+
+### Regex de Detección
+```elisp
+"[\"']\\([^\"]+\\.\\([a-zA-Z0-9]+\\)\\)[\"']"
+```
+Captura paths en comillas dobles o simples
+
+---
+
+## 🎨 Código de Colores
+
+- **Cyan**: Path válido, archivo existe
+- **Rojo ondulado**: Path no encontrado
+- **Naranja ondulado**: Formato no soportado por DragonRuby
+- **Dark Cyan (hover)**: Feedback visual al pasar mouse
+
+---
+
+## 🚀 Próximas Mejoras Posibles
+
+- [ ] Cache de dimensiones para mejor performance
+- [ ] Soporte para sprite sheets (mostrar tile específico)
+- [ ] Preview de animaciones
+- [ ] Integración con Assets Browser
+
+---
+
+**Actualizado**: 2025-12-24 01:26:00  
+**Estado**: ✅ Totalmente funcional con metadata rica

@@ -1,4 +1,4 @@
-;;; dragonruby-colors-ui.el --- Live Color Preview & Editor -*- lexical-binding: t; -*-
+;;; dragonruby-colors.el --- Live Color Preview & Editor -*- lexical-binding: t; -*-
 
 (require 'cl-lib)
 (require 'dragonruby-config)
@@ -79,8 +79,8 @@
   (let* ((start (overlay-start overlay))
          (end   (overlay-end overlay))
          (text  (buffer-substring-no-properties start end)))
-    ;; Flexible Regex for 3, 4, or 5 values
-    (when (string-match "\\[\\s-*\\([0-9]+\\)[, ]+\\([0-9]+\\)[, ]+\\([0-9]+\\)\\(?:[, ]+\\([0-9]+\\)\\)?\\(?:[, ]+\\([0-9]+\\)\\)?\\s-*\\]" text)
+    ;; Flexible Regex for 3, 4, or 5 values with Hex support
+    (when (string-match "\\[\\s-*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\(?:[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\)?\\(?:[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\)?\\s-*\\]" text)
       (let* ((v1 (string-to-number (match-string 1 text)))
              (v2 (string-to-number (match-string 2 text)))
              (v3 (string-to-number (match-string 3 text)))
@@ -100,7 +100,7 @@
   (when dragonruby-enable-color-preview
     (save-excursion
       (goto-char start)
-      (while (and (re-search-forward "\\[\\s-*\\([0-9]+\\)[, ]+\\([0-9]+\\)[, ]+\\([0-9]+\\)\\(?:[, ]+\\([0-9]+\\)\\)?\\(?:[, ]+\\([0-9]+\\)\\)?\\s-*\\]" end t)
+      (while (and (re-search-forward "\\[\\s-*\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\(?:[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\)?\\(?:[, ]+\\(\\(?:0x[0-9a-fA-F]+\\|[0-9]+\\)\\)\\)?\\s-*\\]" end t)
                   (< (dragonruby--count-color-overlays) dragonruby-max-overlays-per-type))
         (let ((s (match-beginning 0))
               (e (match-end 0))
@@ -122,4 +122,4 @@
              return (dragonruby--on-color-click ov)
              finally (message "No color array found at point."))))
 
-(provide 'dragonruby-colors-ui)
+(provide 'dragonruby-colors)

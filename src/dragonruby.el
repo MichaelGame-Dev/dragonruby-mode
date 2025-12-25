@@ -1,13 +1,13 @@
 ;;; dragonruby.el --- DragonRuby Cognitive Mode  -*- lexical-binding: t; -*-
 
 ;; Author: Macgyber <esteban3261g@gmail.com>
-;; Version: 0.1.1
+;; Version: 0.2.0
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: games, dragonruby, tools, help
 ;; URL: https://github.com/Macgyber/dragonruby-mode
 
 ;;; Commentary:
-;; Cognitive Amplifier for DragonRuby.
+;; Semantic Extension for DragonRuby.
 
 ;;; Code:
 
@@ -21,24 +21,19 @@
                         byte-compile-current-file)
                        (t (buffer-file-name))))))
     (add-to-list 'load-path (expand-file-name "core" current-dir))
-    (add-to-list 'load-path (expand-file-name "modules" current-dir))
-    (add-to-list 'load-path (expand-file-name "ui" current-dir))
-    (add-to-list 'load-path (expand-file-name "mode" current-dir))
-    (add-to-list 'load-path (expand-file-name "concepts" current-dir))))
+    (add-to-list 'load-path (expand-file-name "features" current-dir))))
 
-;; 2. Infrastructure
-(require 'dragonruby-core-concepts)
-(require 'dragonruby-registry)
-(require 'dragonruby-config)
+;; 2. Core
 (require 'dragonruby-project)
+;; (require 'dragonruby-config) ; Uncomment if config is needed
 
-;; 3. Knowledge Base
-(require 'dragonruby-args)
-(require 'dragonruby-args-sub)
+;; 3. Features
 (require 'dragonruby-colors)
+(require 'dragonruby-sprites)
+(require 'dragonruby-paths)
 
 ;; 4. Orchestration
-(require 'dragonruby-impl)
+(require 'dragonruby-mode)
 
 (provide 'dragonruby)
 ;;; dragonruby.el ends here

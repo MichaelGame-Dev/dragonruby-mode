@@ -1,15 +1,12 @@
-;;; dragonruby-impl.el --- DragonRuby Minor Mode Implementation  -*- lexical-binding: t; -*-
+;;; dragonruby-mode.el --- DragonRuby Minor Mode Implementation  -*- lexical-binding: t; -*-
 
 ;; 1. Core / UI Dependencies
-(require 'dragonruby-eldoc)
-(require 'dragonruby-colors-ui)
-(require 'dragonruby-sprites-ui)
-(require 'dragonruby-navigation-ui)
-(require 'dragonruby-inspector)
+(require 'dragonruby-colors)
+(require 'dragonruby-sprites)
+(require 'dragonruby-paths)
 
 (defvar dragonruby-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-d") 'dragonruby-inspect-at-point)
     (define-key map (kbd "C-c C-k") 'dragonruby-adjust-color-at-point)
     map)
   "Keymap for DragonRuby mode.")
@@ -43,14 +40,12 @@
   :keymap dragonruby-mode-map
   (if dragonruby-mode
       (progn
-        (dragonruby-enable-eldoc)
-        (dragonruby-navigation-enable)
+        ;; (dragonruby-navigation-enable) ;; Not used yet in this simplified version if it relied on eldoc hook
         (dragonruby--scan-all)
         (add-hook 'after-change-functions #'dragonruby--after-change nil t)
         (add-hook 'completion-at-point-functions #'dragonruby--completion-at-point nil t))
     ;; Disable
-    (kill-local-variable 'eldoc-documentation-function)
-    (dragonruby-navigation-disable)
+    ;; (dragonruby-navigation-disable)
     (remove-hook 'after-change-functions #'dragonruby--after-change t)
     (remove-hook 'completion-at-point-functions #'dragonruby--completion-at-point t)
     (remove-overlays (point-min) (point-max) 'dragonruby-color-overlay t)
@@ -85,4 +80,4 @@
 
 (add-hook 'ruby-mode-hook #'dragonruby-mode-maybe-enable)
 
-(provide 'dragonruby-impl)
+(provide 'dragonruby-mode)
