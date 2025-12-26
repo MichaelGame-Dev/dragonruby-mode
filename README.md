@@ -6,7 +6,7 @@ A semantic-first, Zero-UI development environment for DragonRuby Game Toolkit.
 
 This mode transforms Emacs into a semantic editor for DragonRuby, utilizing **overlays** and **contextual intelligence** to verify "Does this asset exist?" or "What color is this?" without leaving the code.
 
-## ✨ Features (Phase 1 Complete)
+## ✨ Features (Phase 1 Complete - Subject to Improvements 🚧)
 
 ### 🎨 Semantic Colors
 Automatically detects and visualizes colors in code. Supports virtually every DragonRuby syntax format:

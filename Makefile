@@ -1,25 +1,28 @@
 EMACS ?= emacs
 
-# Source files
-SRCS = src/dragonruby.el \
-       src/dragonruby-mode.el \
-       src/core/dragonruby-config.el \
-       src/core/dragonruby-project.el \
-       src/features/dragonruby-colors.el \
-       src/features/dragonruby-sprites.el \
-       src/features/dragonruby-paths.el
+# Dynamically find all .el files in src/
+SRCS := $(shell find src -name "*.el")
+OBJS := $(SRCS:.el=.elc)
 
-# Compilation output
-OBJS = $(SRCS:.el=.elc)
-
-.PHONY: all compile clean
+.PHONY: all compile clean test
 
 all: compile
 
 compile: $(OBJS)
 
+# Compile an elisp file to .elc
+# We include src and subdirectories in load-path (-L) so (require ...) works
 %.elc: %.el
-	$(EMACS) -Q --batch -L src -L src/core -L src/features -f batch-byte-compile $<
+	@echo "Compiling $<..."
+	@$(EMACS) -Q --batch \
+		-L src \
+		-L src/core \
+		-L src/features \
+		-f batch-byte-compile $<
 
 clean:
-	rm -f $(OBJS)
+	@echo "Cleaning compiled files..."
+	@rm -f $(OBJS)
+
+test:
+	@echo "Unit tests not yet implemented. Skipping."
