@@ -71,3 +71,9 @@ Now using `:hero_color` in Ruby will show a preview!
 *   `src/features/`: Feature modules (Colors, Sprites, Paths).
 *   `src/data/`: JSON data assets (Palettes).
 *   `examples/`: Test suite (`main.rb`) to validate all features.
+
+## 🛣️ Roadmap & Future Ideas
+
+*   **Interactive Color Picker (Phase 1.5)**: Click on a color to open the OS native color picker. (Implemented locally, pending community interest).
+*   **Sprite Atlas Support**: Visualize sprites within sprite sheets.
+*   **Hot Reload Integration**: Trigger DRGTK reload directly from Emacs.
