@@ -2,41 +2,48 @@
 
 ## 🏛️ Core Principles
 
-1.  **Semantic Overlays**: We do not use font-lock (regex highlighting) for semantic features. We use `overlays`, which allow for rich interaction (click, hover), boxes, and arbitrary styling independent of syntax highlighting.
-2.  **Zero-UI**: Information appears *in-place*. No sidebars or popups unless explicitly requested by interaction (e.g. Color Picker).
-3.  **Data-Driven**: Hardcoded lists are avoided. Critical data (like color palettes) lives in external JSON files for extensibility.
+1.  **Semantic Overlays**: We prioritize overlays over font-lock. Information is painted on top of the buffer (colors, images, links) without altering the text.
+2.  **Zero-UI**: Information appears *in-place*. No sidebars.
+    *   **Colors**: Inline Backgrounds.
+    *   **Sprites**: Inline Tiny Thumbnails + Hover Tooltips.
+    *   **Paths**: Clickable Hyperlinks.
+3.  **Project-Aware**: All lookups (`app/main.rb`) are resolved relative to the DragonRuby project root.
 
 ## 🧩 Module Breakdown
 
-### 1. `dragonruby-mode.el` (Orchestrator)
-*   Manages the minor mode state.
-*   Enables/Disables sub-features (`colors`, `sprites`, `paths`).
-*   Hooks into `after-change-functions` to trigger incremental scanning.
+### 1. `features/dragonruby-colors.el` (The Painter)
+*   **Scanning**: Uses a Hybrid approach.
+    *   **One-Liners**: Paints full block.
+    *   **Multiline**: Paints fragments to respect indentation.
+*   **Data Source**: Reads palettes from `src/data/palettes.json` via a recursive root lookup.
 
-### 2. `features/dragonruby-colors.el` (The Painter)
-*   **Scanning Strategy**: "Context Window". For complex structures like Hashes, we find an anchor (`r:`) and scan a limited forward window (200 chars) for related keys (`g:`, `b:`).
-*   **Contrast Logic**: Automatically calculates luminance to set text color (black/white) for readability.
-*   **Data Source**: Reads `src/data/palettes.json` at startup via `json-read-file`. Flattens nested JSON categories into a single `O(1)` Hash Table lookup for symbol resolution.
+### 2. `features/dragonruby-sprites.el` (The Asset Manager)
+*   **Dual Visualization**:
+    1.  **Inline**: Inserts a tiny (20px) thumbnail using the `after-string` overlay property.
+    2.  **Hover**: Injects a large (300px) image into the `help-echo` property.
+*   **Autocomplete (CAPF)**: Implements `completion-at-point` to recursively scan `.png/.jpg` files in the project and offer them as candidates.
+*   **Validation**: 
+    *   Cyan = Valid.
+    *   Red = Missing.
+    *   Orange = Unsupported format.
 
-### 3. `features/dragonruby-sprites.el` (The asset Manager)
-*   Scans string literals ending in image extensions.
-*   **Validation**: Checks `file-exists-p` relative to the Project Root.
-*   **Feedback**: Uses distinct overlay styles (color/underline style) to communicate validity instantly.
+### 3. `features/dragonruby-paths.el` (The Navigator)
+*   **Universal Linker**: Scans for:
+    *   Ruby `require` (adds `.rb` implicitly).
+    *   Data files (`.json`, `.csv`, `.txt`, `.xml`).
+*   **Interaction**: Creates clickable hyperlinks (`keymap` on overlay) that open the file.
 
-### 4. `core/dragonruby-project.el` (The Brain)
-*   Locates the `app/main.rb` or `.dragonruby/` marker to establish root.
-*   Resolves relative paths (`sprites/foo.png`) to absolute system paths.
+### 4. `core/dragonruby-project.el`
+*   Responsible for finding the project root (dominating file `app/main.rb` or `.dragonruby/`).
 
 ## 🔄 Execution Flow
 
-1.  **User types** in buffer.
-2.  `after-change-functions` hook fires.
-3.  Each enabled feature (`scan-colors`, `scan-sprites`) runs incrementally.
-4.  **Colors**:
-    *   Regex search finds candidate.
-    *   Validation logic runs (e.g. "Do we have r, g, and b?").
-    *   `dragonruby--make-overlay` creates the visual block.
-5.  **Data Persistence**: Overlays persist until explicitly cleared or the buffer text changes significantly.
+1.  **User types** -> `after-change-functions` hook fires.
+2.  **Scanners run** (`scan-colors`, `scan-sprites`, `scan-paths`).
+3.  **Resolution**: Paths are resolved to absolute system paths.
+4.  **Painting**: Overlays are created/updated.
+5.  **Interaction**: User clicks an overlay -> `find-file` or Color Picker (future).
 
 ## 🎨 Extensibility
-New color palettes can be added by modifying `src/data/palettes.json`. Emacs loads this map into memory once, ensuring high performance during typing.
+*   **Colors**: Add to `palettes.json`.
+*   **Sprites**: Add extensions to `dragonruby-supported-sprites`.

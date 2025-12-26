@@ -2,93 +2,64 @@
 
 A semantic-first, Zero-UI development environment for DragonRuby Game Toolkit.
 
+[📖 Read the Technical Architecture](docs/ARCHITECTURE.md)
+
 ## 🌟 Philosophy
 
-This mode transforms Emacs into a semantic editor for DragonRuby, utilizing **overlays** and **contextual intelligence** to verify "Does this asset exist?" or "What color is this?" without leaving the code.
+This mode transforms Emacs into a semantic editor for DragonRuby, utilizing **overlays** and **contextual intelligence** to verify "Does this asset exist?", "What color is this?", or "Where does this file lead?" without leaving the code.
 
-## ✨ Features (Phase 1 Complete - Subject to Improvements 🚧)
+## ✨ Features (Complete)
 
-### 🎨 Semantic Colors
-Automatically detects and visualizes colors in code. Supports virtually every DragonRuby syntax format:
+### 🎨 Phase 1: Semantic Colors
+Automatically detects and visualizes colors in code using **Smart Hybrid Highlighting**.
 
-*   **Arrays (RGB & RGBA)**: `[255, 0, 0]` and `[0, 255, 0, 128]`
-*   **Hexadecimal**: `0xFF00FF` (Common in DR)
-*   **Hashes (Hybrid Smart-Mode)**:
-    *   **One-Liners**: `{ r: 255, g: 0, b: 0 }` -> Highlights the full block.
-    *   **Multiline**: Resects indentation. Highlights fragments (`r: 255`) individually for a clean, professional look.
-*   **Symbols (Data-Driven)**: `:red`, `:blue`, `:pico_orange` or **Your Custom Colors**.
-    *   🚀 **Happy Accident / Pro Tip**: You can define your own project palette in `src/data/palettes.json`!
-    *   Example: Define `"hero_damage": "#FF0000"` in the JSON.
-    *   Usage: Write `:hero_damage` in your code. Emacs will visualize it instantly.
-    *   *Benefit*: Maintain perfect color consistency across your entire project using semantic names instead of hex codes.
+*   **Arrays**: `[255, 0, 0]` and `[0, 255, 0, 128]`
+*   **Hexadecimal**: `0xFF00FF`
+*   **Hashes**:
+    *   **One-Liners**: `{ r: 255, g: 0, b: 0 }` (Full Block)
+    *   **Multiline**: `{ r: 255, ... }` (Fragmented, respects indentation)
+*   **Symbols**: `:red`, `:dragon_green` (Data-Driven via `src/data/palettes.json`)
+    *   🚀 **Pro Tip**: Add your own game colors to `palettes.json` for project-wide consistency!
 
-### 🖼️ Semantic Sprites
-*   Hyperlink interaction for sprite paths.
-*   **Visual Validation**:
-    *   <u>Underlined</u>: File exists and is valid.
-    *   <span style="color:red">Wavy Red</span>: File missing.
-    *   <span style="color:orange">Wavy Orange</span>: Unsupported format (e.g. `.psd`).
+### 🖼️ Phase 2: Semantic Sprites
+Visualizes your game assets immediately.
 
-### 🧭 Semantic Navigation
-*   `require "app/game.rb"` become clickable links.
-*   Auto-detects project root using `dragonruby` conventions.
+*   **Inline Previews**: A tiny thumbnail (20px) appears right next to the filename.
+*   **Rich Hover**: Hover over the path to see the full image + file size + dimensions.
+*   **Validation**: 
+    *   <span style="color:cyan">Cyan</span> = Valid Asset.
+    *   <span style="color:red">Red</span> = Missing File.
+*   **Autocomplete**: Type `"sprites/` and get a list of project images.
 
-## 🚀 Installation
+### 🗺️ Phase 3: Universal Navigation
+Turns your code into a Hypertext web.
 
-### Quick Start (Dev Mode)
-1.  Run the clean installer script:
-    ```bash
-    sh clean_install.sh
+*   **Smart Requires**: Click `require 'app/player'` to jump to the file (handles implicit `.rb`).
+*   **Data Links**: Strings like `"data/levels.json"` or `"docs/story.txt"` become clickable links if the file exists.
+*   **Error Detection**: Requires pointing to non-existent files are marked in Red.
+
+## 🛠️ Installation
+
+1.  Clone this repository.
+2.  Add to your `init.el`:
+    ```elisp
+    (add-to-list 'load-path "/path/to/dragonruby-mode/src")
+    (require 'dragonruby-mode)
     ```
-2.  Restart Emacs.
+3.  Open a `.rb` file.
 
-### Manual Installation
-Add the `src` directory to your load-path and require the mode:
+## 🛣️ Roadmap & Community Vote 🗳️
 
-```elisp
-(add-to-list 'load-path "/path/to/dragonruby-mode/src")
-(add-to-list 'load-path "/path/to/dragonruby-mode/src/core")
-(add-to-list 'load-path "/path/to/dragonruby-mode/src/features")
-(require 'dragonruby-mode)
-```
+We need your feedback to prioritize the next wave of features:
 
-## 🛠️ Configuration
+*   **[ ] Phase 1.5: Interactive Color Picker**
+    *   Click a color block to open the macOS/Windows native color picker.
+*   **[ ] Phase 2.5: Sprite Optimizer**
+    *   Right-click a sprite to Trim/Compress it (requires ImageMagick).
+*   **[ ] Phase 3.1: Hyper-Symbol Navigation**
+    *   Turn every method call (`enemy.attack`) into a clickable link to its definition.
+*   **[ ] Phase 4: Hot Reload**
+    *   Trigger DragonRuby reset from Emacs.
 
-### Customizing Colors
-Edit `src/data/palettes.json` to add new color symbols.
-```json
-{
-  "my_theme": {
-    "hero_color": "#FFCC00",
-    "enemy_color": "#FF0000"
-  }
-}
-```
-Now using `:hero_color` in Ruby will show a preview!
-
-## 📂 Project Structure
-*   `src/core/`: Configuration and Project Root logic.
-*   `src/features/`: Feature modules (Colors, Sprites, Paths).
-*   `src/data/`: JSON data assets (Palettes).
-*   `examples/`: Test suite (`main.rb`) to validate all features.
-
-## 🛣️ Roadmap & Future Ideas (Seeking Feedback 🗣️)
-
-### 1. Interactive Color Picker (Phase 1.5)
-*   **Goal**: Click on a color to edit it visually.
-*   **Options on Table**:
-    *   [ ] **Native OS Navigation**: Opens macOS/Windows color picker (requires scripts).
-    *   [ ] **Emacs Built-in**: Uses simple text-based list selector.
-    *   [ ] **Drag & Drop**: Experimental number dragging.
-
-### 2. Sprite Previews (Phase 2)
-*   **Goal**: See your assets inside the code.
-*   **Options on Table**:
-    *   [ ] **Inline Thumbnails**: Small 32px icon next to the filename.
-    *   [ ] **Hover Tooltip**: Image appears only on mouseover.
-    *   [ ] **Margin Display**: Image appears in the frieze/margin.
-    *   [ ] **Sprite Optimizer**: Context action to Trim/Compress images (requires ImageMagick).
-
-### 3. Advanced Features
-*   **Hot Reload Integration**: Trigger DRGTK reload directly from Emacs.
-*   **Sprite Atlas**: Visualize sub-rectangles in sprite sheets.
+---
+*Built with ❤️ for the DragonRuby Community.*
