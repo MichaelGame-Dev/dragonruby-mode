@@ -72,8 +72,22 @@ Now using `:hero_color` in Ruby will show a preview!
 *   `src/data/`: JSON data assets (Palettes).
 *   `examples/`: Test suite (`main.rb`) to validate all features.
 
-## 🛣️ Roadmap & Future Ideas
+## 🛣️ Roadmap & Future Ideas (Seeking Feedback 🗣️)
 
-*   **Interactive Color Picker (Phase 1.5)**: Click on a color to open the OS native color picker. (Implemented locally, pending community interest).
-*   **Sprite Atlas Support**: Visualize sprites within sprite sheets.
+### 1. Interactive Color Picker (Phase 1.5)
+*   **Goal**: Click on a color to edit it visually.
+*   **Options on Table**:
+    *   [ ] **Native OS Navigation**: Opens macOS/Windows color picker (requires scripts).
+    *   [ ] **Emacs Built-in**: Uses simple text-based list selector.
+    *   [ ] **Drag & Drop**: Experimental number dragging.
+
+### 2. Sprite Previews (Phase 2)
+*   **Goal**: See your assets inside the code.
+*   **Options on Table**:
+    *   [ ] **Inline Thumbnails**: Small 32px icon next to the filename.
+    *   [ ] **Hover Tooltip**: Image appears only on mouseover.
+    *   [ ] **Margin Display**: Image appears in the frieze/margin.
+
+### 3. Advanced Features
 *   **Hot Reload Integration**: Trigger DRGTK reload directly from Emacs.
+*   **Sprite Atlas**: Visualize sub-rectangles in sprite sheets.
