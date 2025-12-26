@@ -16,8 +16,11 @@ Automatically detects and visualizes colors in code. Supports virtually every Dr
 *   **Hashes (Hybrid Smart-Mode)**:
     *   **One-Liners**: `{ r: 255, g: 0, b: 0 }` -> Highlights the full block.
     *   **Multiline**: Resects indentation. Highlights fragments (`r: 255`) individually for a clean, professional look.
-*   **Symbols (Data-Driven)**: `:red`, `:blue`, `:pico_orange`
-    *   🚀 **Extensible Palettes**: Colors are loaded from `src/data/palettes.json`. You can add your own palettes (PICO-8, Nord, etc.) without touching Lisp code.
+*   **Symbols (Data-Driven)**: `:red`, `:blue`, `:pico_orange` or **Your Custom Colors**.
+    *   🚀 **Happy Accident / Pro Tip**: You can define your own project palette in `src/data/palettes.json`!
+    *   Example: Define `"hero_damage": "#FF0000"` in the JSON.
+    *   Usage: Write `:hero_damage` in your code. Emacs will visualize it instantly.
+    *   *Benefit*: Maintain perfect color consistency across your entire project using semantic names instead of hex codes.
 
 ### 🖼️ Semantic Sprites
 *   Hyperlink interaction for sprite paths.
