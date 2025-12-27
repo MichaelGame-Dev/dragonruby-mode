@@ -3,18 +3,15 @@
 (require 'cl-lib)
 (require 'image-file)
 (require 'image-mode)
+(require 'dragonruby-core)
 
-(defvar dragonruby--sprite-overlays nil)
+(defvar-local dragonruby--sprite-overlays nil
+  "List of sprite overlays in the current buffer.")
 (defvar dragonruby-supported-sprites '("png" "jpg" "jpeg" "gif" "bmp"))
 (defvar dragonruby-unsupported-sprites '("svg" "psd" "xcf" "ase" "aseprite"))
 
 ;; --- PATH RESOLUTION ---
-(defun dragonruby--find-project-root ()
-  (let ((dir (file-name-directory (or buffer-file-name default-directory))))
-    (or (locate-dominating-file dir "app/main.rb")
-        (locate-dominating-file dir "dragonruby")
-        (locate-dominating-file dir ".dragonruby/")
-        dir)))
+;; Note: dragonruby--find-project-root is now in dragonruby-core.el
 
 (defun dragonruby--resolve-asset-path (path)
   (let ((root (dragonruby--find-project-root)))
@@ -128,7 +125,14 @@
             (dragonruby--make-sprite-overlay start end raw-path nil 'unsupported))))))))
 
 (defun dragonruby--after-sprite-change (_beg _end _len)
-  (dragonruby--scan-sprites))
+  "Debounced sprite scanning after buffer change."
+  (dragonruby--debounce #'dragonruby--scan-sprites 0.3))
+
+(defun dragonruby--refresh-sprites ()
+  "Refresh sprite overlays when buffer becomes visible."
+  (when (and dragonruby-sprite-mode
+             (eq (current-buffer) (window-buffer)))
+    (dragonruby--scan-sprites)))
 
 (defun dragonruby--setup-capf ()
   (add-hook 'completion-at-point-functions #'dragonruby-sprite-completion-at-point nil t))
@@ -139,12 +143,15 @@
   (if dragonruby-sprite-mode
       (progn
         (add-hook 'after-change-functions #'dragonruby--after-sprite-change nil t)
+        (add-hook 'window-configuration-change-hook #'dragonruby--refresh-sprites nil t)
         (dragonruby--setup-capf)
-        (add-hook 'image-mode-hook #'dragonruby--image-mode-hook) ;; NEW HOOK
+        (add-hook 'image-mode-hook #'dragonruby--image-mode-hook)
         (dragonruby--scan-sprites))
     (remove-hook 'after-change-functions #'dragonruby--after-sprite-change t)
+    (remove-hook 'window-configuration-change-hook #'dragonruby--refresh-sprites t)
     (remove-hook 'completion-at-point-functions #'dragonruby-sprite-completion-at-point t)
     (remove-hook 'image-mode-hook #'dragonruby--image-mode-hook)
-    (mapc #'delete-overlay dragonruby--sprite-overlays)))
+    (mapc #'delete-overlay dragonruby--sprite-overlays)
+    (setq dragonruby--sprite-overlays nil)))
 
 (provide 'dragonruby-sprites)

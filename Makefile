@@ -11,13 +11,12 @@ all: compile
 compile: $(OBJS)
 
 # Compile an elisp file to .elc
-# We include src and subdirectories in load-path (-L) so (require ...) works
+# Include src and root in load-path for requires
 %.elc: %.el
 	@echo "Compiling $<..."
 	@$(EMACS) -Q --batch \
+		-L . \
 		-L src \
-		-L src/core \
-		-L src/features \
 		-f batch-byte-compile $<
 
 clean:

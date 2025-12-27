@@ -11,13 +11,13 @@
 
 ## 🧩 Module Breakdown
 
-### 1. `features/dragonruby-colors.el` (The Painter)
+### 1. `src/dragonruby-colors.el` (The Painter)
 *   **Scanning**: Uses a Hybrid approach.
     *   **One-Liners**: Paints full block.
     *   **Multiline**: Paints fragments to respect indentation.
 *   **Data Source**: Reads palettes from `src/data/palettes.json` via a recursive root lookup.
 
-### 2. `features/dragonruby-sprites.el` (The Asset Manager)
+### 2. `src/dragonruby-sprites.el` (The Asset Manager)
 *   **Dual Visualization**:
     1.  **Inline**: Inserts a tiny (20px) thumbnail using the `after-string` overlay property.
     2.  **Hover**: Injects a large (300px) image into the `help-echo` property.
@@ -27,13 +27,13 @@
     *   Red = Missing.
     *   Orange = Unsupported format.
 
-### 3. `features/dragonruby-paths.el` (The Navigator)
+### 3. `src/dragonruby-paths.el` (The Navigator)
 *   **Universal Linker**: Scans for:
     *   Ruby `require` (adds `.rb` implicitly).
     *   Data files (`.json`, `.csv`, `.txt`, `.xml`).
 *   **Interaction**: Creates clickable hyperlinks (`keymap` on overlay) that open the file.
 
-### 4. `core/dragonruby-project.el`
+### 4. `src/dragonruby-core.el` (Project Utilities)
 *   Responsible for finding the project root (dominating file `app/main.rb` or `.dragonruby/`).
 
 ## 🔄 Execution Flow
@@ -45,5 +45,6 @@
 5.  **Interaction**: User clicks an overlay -> `find-file` or Color Picker (future).
 
 ## 🎨 Extensibility
-*   **Colors**: Add to `palettes.json`.
+*   **Colors**: Add to `src/data/palettes.json`.
 *   **Sprites**: Add extensions to `dragonruby-supported-sprites`.
+

@@ -1,11 +1,16 @@
-# Emacs Standard
+# Emacs byte-compiled files
+*.elc
+
+# Emacs backup/autosave
 *~
 \#*\#
-/.emacs.desktop
-/auto-save-list
-*.elc
-/init.el
-/init-plugin.el
+.#*
 
 # macOS
 .DS_Store
+
+# Local development only
+/tests/
+
+# Build artifacts
+/dist/

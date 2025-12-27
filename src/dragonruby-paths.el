@@ -1,16 +1,14 @@
 ;;; dragonruby-paths.el --- Universal Code & Data Navigation with Autocomplete -*- lexical-binding: t; -*-
 
 (require 'cl-lib)
+(require 'dragonruby-core)
 
-(defvar dragonruby--path-overlays nil)
+(defvar-local dragonruby--path-overlays nil
+  "List of path overlays in the current buffer.")
 (defvar dragonruby-data-extensions '("json" "txt" "csv" "tsv" "xml" "yml" "yaml"))
 
 ;; --- PATH RESOLUTION ---
-(defun dragonruby--find-project-root ()
-  (let ((dir (file-name-directory (or buffer-file-name default-directory))))
-    (or (locate-dominating-file dir "app/main.rb")
-        (locate-dominating-file dir ".dragonruby/")
-        dir)))
+;; Note: dragonruby--find-project-root is now in dragonruby-core.el
 
 (defun dragonruby--resolve-path (raw-path type)
   (let* ((root (dragonruby--find-project-root))
@@ -99,7 +97,14 @@
               (dragonruby--make-path-overlay start end raw-path abs-path 'data t))))))))
 
 (defun dragonruby--after-path-change (_beg _end _len)
-  (dragonruby--scan-paths))
+  "Debounced path scanning after buffer change."
+  (dragonruby--debounce #'dragonruby--scan-paths 0.3))
+
+(defun dragonruby--refresh-paths ()
+  "Refresh path overlays when buffer becomes visible."
+  (when (and dragonruby-paths-mode
+             (eq (current-buffer) (window-buffer)))
+    (dragonruby--scan-paths)))
 
 (defun dragonruby--setup-path-capf ()
   (add-hook 'completion-at-point-functions #'dragonruby-path-completion-at-point nil t))
@@ -110,9 +115,11 @@
   (if dragonruby-paths-mode
       (progn
         (add-hook 'after-change-functions #'dragonruby--after-path-change nil t)
-        (dragonruby--setup-path-capf) ;; Enable Autocomplete for require
+        (add-hook 'window-configuration-change-hook #'dragonruby--refresh-paths nil t)
+        (dragonruby--setup-path-capf)
         (dragonruby--scan-paths))
     (remove-hook 'after-change-functions #'dragonruby--after-path-change t)
+    (remove-hook 'window-configuration-change-hook #'dragonruby--refresh-paths t)
     (remove-hook 'completion-at-point-functions #'dragonruby-path-completion-at-point t)
     (dragonruby--clear-path-overlays)))
 

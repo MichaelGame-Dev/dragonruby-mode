@@ -2,8 +2,10 @@
 
 (require 'cl-lib)
 (require 'json)
+(require 'dragonruby-core)
 
-(defvar dragonruby--color-overlays nil)
+(defvar-local dragonruby--color-overlays nil
+  "List of color overlays in the current buffer.")
 (defvar dragonruby-colors-table (make-hash-table :test 'equal))
 
 ;; --- JSON LOADING ---
@@ -146,7 +148,14 @@
               (goto-char new-pos))))))))
 
 (defun dragonruby--after-color-change (_beg _end _len)
-  (dragonruby--scan-colors))
+  "Debounced color scanning after buffer change."
+  (dragonruby--debounce #'dragonruby--scan-colors 0.3))
+
+(defun dragonruby--refresh-colors ()
+  "Refresh color overlays when buffer becomes visible."
+  (when (and dragonruby-color-blocks-mode
+             (eq (current-buffer) (window-buffer)))
+    (dragonruby--scan-colors)))
 
 (define-minor-mode dragonruby-color-blocks-mode
   "Smart color highlighting."
@@ -154,8 +163,10 @@
   (if dragonruby-color-blocks-mode
       (progn
         (add-hook 'after-change-functions #'dragonruby--after-color-change nil t)
+        (add-hook 'window-configuration-change-hook #'dragonruby--refresh-colors nil t)
         (dragonruby--scan-colors))
     (remove-hook 'after-change-functions #'dragonruby--after-color-change t)
+    (remove-hook 'window-configuration-change-hook #'dragonruby--refresh-colors t)
     (dragonruby--clear-color-overlays)))
 
 (provide 'dragonruby-colors)
