@@ -74,10 +74,47 @@ Open any `.rb` file. You should see:
 
 ### Troubleshooting
 
-**Command not found?** Check which init.el Emacs is using:
+**¿El comando no aparece después de reiniciar?** Emacs puede estar usando un archivo de configuración diferente.
+
+#### Paso 1: Encuentra tu archivo de configuración REAL
+
+1. Presiona `Alt` + `Shift` + `;` (esto es `M-:`)
+2. Escribe: `(find-file user-init-file)`
+3. Presiona `Enter`
+
+Esto abrirá el archivo que Emacs **realmente** está usando.
+
+#### Paso 2: Identifica cuál es
+
+El buffer que se abre puede ser:
+- `#<buffer .emacs>` → Tu archivo es `~/.emacs`
+- `#<buffer init.el>` → Tu archivo es `~/.emacs.d/init.el`
+
+> ⚠️ **Importante**: Emacs solo usa UNO de estos:
+> - `~/.emacs`
+> - `~/.emacs.el`  
+> - `~/.emacs.d/init.el`
+>
+> Si editaste el incorrecto, los cambios no se cargarán.
+
+#### Paso 3: Añade la configuración
+
+En el archivo que se abrió, añade:
+
+```elisp
+;; DragonRuby Mode
+(add-to-list 'load-path "e:/ANTIGRAVITY/dragonruby-emacs/packages/dragonruby-mode")
+(require 'dragonruby-mode)
+(add-hook 'ruby-mode-hook #'dragonruby-mode)
 ```
-M-x describe-variable RET user-init-file RET
-```
+
+#### Paso 4: Guarda y reinicia
+
+1. Guarda: `C-x C-s`
+2. Reinicia Emacs completamente
+3. Abre un archivo `.rb`
+
+Deberías ver: `🎨 DragonRuby: Loaded 28 colors.`
 
 
 ## 🧪 Testing & Quality Assurance
